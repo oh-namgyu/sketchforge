@@ -91,8 +91,11 @@ def server(tmp_path_factory: pytest.TempPathFactory) -> Iterator[str]:
 
 @pytest.fixture(scope="session")
 def keyless_server(tmp_path_factory: pytest.TempPathFactory) -> Iterator[str]:
-    """A second keyless instance, so tests that need an *empty* store (`server`)
-    are not disturbed by tests that only need the absence of a model."""
+    """A second keyless instance — the scratch one.
+
+    `server` is reserved for tests that need a *pristine* store (an empty home
+    grid is one of the things stage 3 asserts), so everything that only needs a
+    working, model-less app shares this one instead of disturbing it."""
     yield from run_app(tmp_path_factory.mktemp("keyless-data"))
 
 

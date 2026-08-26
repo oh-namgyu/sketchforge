@@ -75,6 +75,15 @@
         <select class="input input-select" id="version-select" disabled></select>
         <button class="btn" type="button" id="studio-revert" disabled>Revert</button>
         <button class="btn btn-primary" type="button" id="studio-save" disabled>Save version</button>
+        <details class="menu" id="export-menu">
+          <summary class="btn">Export</summary>
+          <div class="menu-body">
+            <button class="btn btn-small" type="button" id="export-svg">SVG</button>
+            <button class="btn btn-small" type="button" id="export-png">PNG 1&times;</button>
+            <button class="btn btn-small" type="button" id="export-png2">PNG 2&times;</button>
+            <button class="btn btn-small" type="button" id="export-mmd">.mmd source</button>
+          </div>
+        </details>
       </div>
 
       <div class="instructionbar" id="instructionbar">
@@ -139,5 +148,6 @@
   <script src="/static/js/home.js"></script>
   <script src="/static/js/studio.js"></script>
   <script src="/static/js/revise.js"></script>
+  <script src="/static/js/export.js"></script>
 </body>
 </html>
