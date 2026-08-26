@@ -10,10 +10,105 @@
 <body>
   <header class="topbar">
     <h1 class="brand"><a class="brand-link" href="#/">sketch<span class="brand-em">forge</span></a></h1>
-    <p class="tagline">mermaid diagram studio</p>
+    <p class="tagline">mermaid drafting table</p>
   </header>
+
   <main class="wrap">
-    <p class="empty">The studio UI arrives in stage 3. The REST API is live at <code>/api/sketches</code>.</p>
+    <div class="notice hidden" id="notice"></div>
+
+    <div id="view-home">
+      <section class="panel panel-lead">
+        <div class="panel-head">
+          <h2 class="panel-title">New sketch</h2>
+          <span class="hint">Everything here works without an API key.</span>
+        </div>
+        <label class="field-label" for="f-title">Title</label>
+        <input class="input input-hero" id="f-title" maxlength="200"
+               placeholder="checkout flow, order lifecycle, …">
+        <p class="helper">Optional — an untitled sketch is fine, you can tell them apart by shape.</p>
+
+        <span class="field-label" id="f-types-label">Diagram type</span>
+        <div class="chips" id="f-types" role="group" aria-labelledby="f-types-label">
+          <button class="chip" type="button" data-type="flowchart" aria-pressed="true">flowchart</button>
+          <button class="chip" type="button" data-type="sequence" aria-pressed="false">sequence</button>
+          <button class="chip" type="button" data-type="state" aria-pressed="false">state</button>
+          <button class="chip" type="button" data-type="er" aria-pressed="false">ER</button>
+          <button class="chip" type="button" data-type="class" aria-pressed="false">class</button>
+          <button class="chip" type="button" data-type="other" aria-pressed="false">other</button>
+        </div>
+        <p class="helper">A hint for the starter snippet — any mermaid syntax is accepted in the editor.</p>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" type="button" id="f-blank">Start blank</button>
+          <span class="form-note" id="form-note"></span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">Sketches</h2>
+          <span class="badge badge-plain" id="sketch-count">0</span>
+        </div>
+        <div class="grid" id="sketch-grid"></div>
+        <p class="empty" id="sketch-empty">Nothing on the table yet — start a blank sketch.</p>
+      </section>
+    </div>
+
+    <div class="hidden" id="view-studio">
+      <div class="actionbar">
+        <a class="btn" href="#/" id="studio-back">&larr; Sketches</a>
+        <h2 class="studio-title" id="studio-title"></h2>
+        <span id="studio-type"></span>
+        <span class="pill pill-empty" id="studio-status">saved</span>
+        <span class="spacer"></span>
+        <label class="field-label field-label-inline" for="version-select">History</label>
+        <select class="input input-select" id="version-select" disabled></select>
+        <button class="btn" type="button" id="studio-revert" disabled>Revert</button>
+        <button class="btn btn-primary" type="button" id="studio-save" disabled>Save version</button>
+      </div>
+
+      <div class="split">
+        <section class="pane pane-editor">
+          <div class="pane-head">
+            <h3 class="pane-title">Source</h3>
+            <span class="form-note" id="editor-meta">0 lines · 0 chars</span>
+            <span class="spacer"></span>
+            <button class="btn btn-small" type="button" id="studio-starter">Insert starter</button>
+          </div>
+          <textarea class="editor" id="source-editor" spellcheck="false" autocapitalize="off"
+                    autocorrect="off" wrap="off"
+                    placeholder="flowchart TD&#10;  A[Start] --> B[End]"></textarea>
+          <div class="error-panel hidden" id="render-error">
+            <span class="error-title">Syntax error</span>
+            <pre class="error-text" id="render-error-text"></pre>
+          </div>
+        </section>
+
+        <section class="pane pane-canvas">
+          <div class="pane-head">
+            <h3 class="pane-title">Render</h3>
+            <span class="spacer"></span>
+            <div class="zoombar">
+              <button class="btn btn-small" type="button" id="zoom-out" aria-label="Zoom out">&minus;</button>
+              <span class="form-note" id="zoom-label">100%</span>
+              <button class="btn btn-small" type="button" id="zoom-in" aria-label="Zoom in">+</button>
+              <button class="btn btn-small" type="button" id="zoom-reset">Fit</button>
+            </div>
+          </div>
+          <div class="canvas is-empty" id="render-canvas">
+            <div class="canvas-stage" id="render-stage"></div>
+            <p class="canvas-hint">The render appears here as you type.</p>
+          </div>
+        </section>
+      </div>
+    </div>
   </main>
+
+  <script src="/static/vendor/mermaid.min.js"></script>
+  <script src="/static/js/sanitize.js"></script>
+  <script src="/static/js/render.js"></script>
+  <script src="/static/js/app.js"></script>
+  <script src="/static/js/home.js"></script>
+  <script src="/static/js/studio.js"></script>
 </body>
 </html>

@@ -19,9 +19,17 @@ DEFAULT_PORT = 6183
 
 # script-src 'self' is the last line of defence behind the SVG sanitiser: even
 # if markup slipped into the render container, an inline script cannot run.
+#
+# style-src is the one relaxation. A mermaid diagram carries its theme as a
+# <style> block plus style attributes inside the SVG, and under a bare
+# default-src 'self' the browser drops both — the diagram renders as unstyled
+# black shapes. Inline CSS cannot execute script while script-src stays 'self',
+# and the sanitiser has already stripped external url() references out of every
+# style it lets through, so the exception is narrow and does not touch the
+# property that matters.
 CSP = (
-    "default-src 'self'; script-src 'self'; img-src 'self' data:; "
-    "base-uri 'none'; frame-ancestors 'none'"
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+    "img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'"
 )
 
 

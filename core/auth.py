@@ -42,7 +42,7 @@ LOGIN_PAGE = """<!doctype html>
     <section class="panel panel-lead">
       <div class="panel-head"><h2 class="panel-title">Sign in</h2></div>
       <form method="post" action="/login">
-        <label class="label" for="token">Access token</label>
+        <label class="field-label" for="token">Access token</label>
         <input class="input input-hero" id="token" type="password" name="token"
                autocomplete="current-password" autofocus placeholder="access token">
         <p class="helper">The token this instance was started with.</p>
