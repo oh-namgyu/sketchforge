@@ -1,0 +1,9 @@
+/* sketchforge — light drafting-table theme. Filled in at stage 3. */
+:root { --paper: #f7f5f0; --ink: #1d2430; --ink-blue: #2f5d8c; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 15.5px/1.6 system-ui, sans-serif; }
+.topbar, .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 28px; }
+.brand { margin: 0; font-size: 34px; letter-spacing: -0.03em; }
+.brand-link { color: var(--ink); text-decoration: none; }
+.brand-em { color: var(--ink-blue); }
+.tagline { margin: 4px 0 0; color: #6b7280; font-size: 13px; letter-spacing: 0.13em; text-transform: uppercase; }
+.empty { color: #6b7280; }

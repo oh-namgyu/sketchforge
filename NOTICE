@@ -1,0 +1,16 @@
+sketchforge bundles third-party code in static/vendor/.
+Nothing here is loaded from a CDN: the Content-Security-Policy is
+"default-src 'self'; script-src 'self'", so every script is served locally.
+
+------------------------------------------------------------------------
+mermaid 11.17.2
+------------------------------------------------------------------------
+License:  MIT
+Homepage: https://mermaid.js.org/
+Source:   https://registry.npmjs.org/mermaid/-/mermaid-11.17.2.tgz
+File:     static/vendor/mermaid.min.js  (dist/mermaid.min.js, UMD bundle)
+sha256:   581ed7d74bd9048d0e3a91363927d72ef22942d7722546b27f7cc29e35390eb8
+Full license text: static/vendor/mermaid.LICENSE
+
+Vendored, not tracked by dependabot. Update with scripts/vendor.sh and
+re-run the XSS probe e2e before committing (see the header of that script).

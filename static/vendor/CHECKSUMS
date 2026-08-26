@@ -1,0 +1,4 @@
+# sha256 of the vendored artifacts — regenerate with scripts/vendor.sh
+# mermaid 11.17.2 (npm tarball https://registry.npmjs.org/mermaid/-/mermaid-11.17.2.tgz)
+581ed7d74bd9048d0e3a91363927d72ef22942d7722546b27f7cc29e35390eb8  mermaid.min.js
+ec9fb67dcb25eccc416ed56e1aab819222c805a2a4bfe4cb19e7556bf2ffde80  mermaid.LICENSE

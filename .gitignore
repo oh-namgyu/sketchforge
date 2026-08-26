@@ -1,0 +1,27 @@
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# runtime state
+data/
+*.log
+
+# node (only if a toolchain is ever added — the app ships no build step)
+node_modules/
+
+# os
+.DS_Store
