@@ -44,10 +44,13 @@ def test_append_records_instruction_and_timestamp(store: Storage) -> None:
     assert entry["created"].endswith("+00:00")
 
 
-def test_append_clears_pending(store: Storage) -> None:
+def test_append_keeps_pending_unless_asked_to_drop_it(store: Storage) -> None:
+    """An unrelated commit leaves the proposal in place — stale, and detectably
+    so — while the commit that confirms it clears the slot."""
     slug = store.create_sketch("Pending")["slug"]
     store.mutate_sketch(slug, lambda s: s.update({"pending": {"source": src("p")}}))
-    assert store.commit_version(slug, src("q"))["pending"] is None
+    assert store.commit_version(slug, src("q"))["pending"] is not None
+    assert store.commit_version(slug, src("r"), drop_pending=True)["pending"] is None
 
 
 def test_append_rejects_empty_and_oversized_source(store: Storage) -> None:

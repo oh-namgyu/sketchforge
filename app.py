@@ -10,6 +10,7 @@ from flask import Flask, Response, send_from_directory
 
 from core import auth
 from core.api import api_bp, register_errors
+from core.llm import AnthropicText
 from core.storage import Storage
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -42,14 +43,32 @@ def resolve_data_dir(data_dir: Optional[str | os.PathLike[str]] = None) -> Path:
     return BASE_DIR / "data"
 
 
+def default_llm() -> object:
+    """Drafter for a normally started app.
+
+    SKETCHFORGE_FAKE=1 swaps in the deterministic offline drafter used by demos
+    and browser tests: no key, no network. The real client is the default
+    everywhere else, and it only reaches for the key when a call is actually
+    made — so an instance without one still serves the whole manual editor and
+    answers the two AI routes with 503.
+    """
+    if os.environ.get("SKETCHFORGE_FAKE") == "1":
+        from core.fake_llm import FakeText
+
+        return FakeText()
+    return AnthropicText()
+
+
 def create_app(
     data_dir: Optional[str | os.PathLike[str]] = None,
     token: Optional[str] = None,
+    llm: Optional[object] = None,
 ) -> Flask:
     app = Flask(__name__, static_folder=str(STATIC_DIR), static_url_path="/static")
     storage = Storage(resolve_data_dir(data_dir))
     storage.purge_trash(days=int(os.environ.get("SKETCHFORGE_TRASH_DAYS", "7")))
     app.config["STORAGE"] = storage
+    app.config["LLM"] = llm if llm is not None else default_llm()
     app.register_blueprint(api_bp)
     register_errors(app)
     auth.install(app, token if token is not None else os.environ.get("AUTH_TOKEN"))

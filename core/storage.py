@@ -211,15 +211,26 @@ class Storage:
 
     # -- versions --------------------------------------------------------
     def commit_version(
-        self, slug: str, source: str, instruction: str = "manual edit"
+        self,
+        slug: str,
+        source: str,
+        instruction: str = "manual edit",
+        drop_pending: bool = False,
     ) -> Dict[str, Any]:
-        """Append a version. Returns the sketch with a transient `dropped` count."""
+        """Append a version. Returns the sketch with a transient `dropped` count.
+
+        A pending proposal survives an unrelated commit on purpose: it carries
+        the version it was built from, so the next accept can tell the client
+        the ground moved instead of quietly confirming a stale diagram. Only
+        accept (and reject) clear the slot.
+        """
         dropped = 0
 
         def change(sketch: Dict[str, Any]) -> None:
             nonlocal dropped
             _entry, dropped = append_version(sketch, source, instruction)
-            sketch["pending"] = None
+            if drop_pending:
+                sketch["pending"] = None
 
         sketch = self.mutate_sketch(slug, change)
         sketch = dict(sketch)
