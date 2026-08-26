@@ -152,6 +152,7 @@ body {
 
 .hint, .helper, .form-note { color: var(--ink-mute); font-size: 12.5px; }
 .helper { margin: 6px 0 16px; }
+.helper-cost { margin: 12px 0 0; padding-top: 10px; border-top: 1px dashed var(--rule); }
 .empty { color: var(--ink-mute); margin: 4px 0 0; }
 
 /* -- form controls ------------------------------------------------------- */
@@ -181,6 +182,7 @@ body {
 .input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); outline: none; }
 .input-hero { font-size: 17px; padding: 12px 14px; }
 .input-select { width: auto; max-width: 260px; padding: 7px 10px; font-size: 13px; }
+.input-intent { min-height: 74px; resize: vertical; font: var(--mono); }
 .input:disabled { color: var(--ink-mute); background: var(--paper-sunk); }
 
 .form-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -353,6 +355,67 @@ body {
   font-weight: 600;
   letter-spacing: -0.01em;
 }
+
+/* the instruction bar and the accept/reject bar are the same shelf in two
+   states, so they share every rule but the tint */
+.instructionbar,
+.diffbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  margin: 0 0 18px;
+  background: var(--paper-sheet);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sheet);
+}
+
+.instructionbar .input { flex: 1 1 260px; width: auto; }
+.diffbar { border-color: var(--blue-line); background: var(--blue-soft); }
+
+.diff-view {
+  flex: 1 1 auto;
+  min-height: 300px;
+  padding: 10px 0;
+  overflow: auto;
+  background: var(--paper-white);
+  font: var(--mono);
+}
+
+.diff-row {
+  display: flex;
+  gap: 10px;
+  padding: 0 16px;
+  line-height: 22px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.diff-sign {
+  flex: 0 0 auto;
+  width: 1ch;
+  color: var(--ink-mute);
+  user-select: none;
+}
+
+.diff-text { flex: 1 1 auto; }
+.diff-same { color: var(--ink-dim); }
+
+.diff-add {
+  color: var(--green);
+  background: var(--green-soft);
+  box-shadow: inset 2px 0 0 var(--green);
+}
+
+.diff-del {
+  color: var(--danger);
+  background: var(--danger-soft);
+  box-shadow: inset 2px 0 0 var(--danger);
+}
+
+.diff-del .diff-text { text-decoration: line-through; text-decoration-color: rgba(171, 64, 56, 0.4); }
 
 .split {
   display: grid;

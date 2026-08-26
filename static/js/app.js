@@ -75,6 +75,22 @@ function showNotice(message, variant, actionLabel, action) {
   noticeBar.appendChild(button("Dismiss", "btn btn-small", clearNotice));
 }
 
+/* A notice that has to outlive a navigation: the studio clears the bar when a
+   sketch loads cleanly, so a message raised just before it opens is parked here
+   and shown once the new view is on screen. */
+let queued = null;
+
+function queueNotice(message, variant) {
+  queued = { message: message, variant: variant };
+}
+
+function flushNotice() {
+  if (!queued) return false;
+  showNotice(queued.message, queued.variant);
+  queued = null;
+  return true;
+}
+
 function snippet(text) {
   const value = (text || "").trim().replace(/\s+/g, " ");
   return value.length > SNIPPET ? value.slice(0, SNIPPET) + "…" : value;
@@ -99,6 +115,8 @@ Object.assign(SF, {
   typeBadge: typeBadge,
   showNotice: showNotice,
   clearNotice: clearNotice,
+  queueNotice: queueNotice,
+  flushNotice: flushNotice,
   snippet: snippet,
   debounce: debounce,
 });

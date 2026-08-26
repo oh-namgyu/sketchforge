@@ -2,19 +2,23 @@
 
 /* Home: the new-sketch panel and the card grid.
 
-   Stage 3 is the keyless core, so the only way in is "Start blank" — the
-   intent box that hands a line to an LLM arrives later and sits beside this
-   button, never in front of it. */
+   Two ways in, and the blank one is never blocked. "Generate with AI" creates
+   the sketch first and asks for a diagram second, so a refused or unconfigured
+   model costs the user a notice, not the sketch: they land in the studio with
+   an empty editor either way. */
 
 (function () {
   const SF = window.SF;
+  const TITLE_FROM_INTENT = 80;
 
   const grid = document.getElementById("sketch-grid");
   const emptyNote = document.getElementById("sketch-empty");
   const countBadge = document.getElementById("sketch-count");
   const titleInput = document.getElementById("f-title");
+  const intentInput = document.getElementById("f-intent");
   const chipRow = document.getElementById("f-types");
   const blankButton = document.getElementById("f-blank");
+  const generateButton = document.getElementById("f-generate");
   const formNote = document.getElementById("form-note");
 
   let chosenType = "flowchart";
@@ -120,30 +124,95 @@
     }
   }
 
+  async function createSketch(title) {
+    return SF.request("POST", "/api/sketches", {
+      title: title,
+      diagram_type: chosenType,
+    });
+  }
+
+  function clearForm() {
+    titleInput.value = "";
+    intentInput.value = "";
+  }
+
+  function setBusy(on, label) {
+    blankButton.disabled = on;
+    generateButton.disabled = on;
+    formNote.textContent = on ? label : "";
+  }
+
   async function startBlank() {
-    blankButton.disabled = true;
-    formNote.textContent = "Creating…";
+    setBusy(true, "Creating…");
     try {
-      const created = await SF.request("POST", "/api/sketches", {
-        title: titleInput.value,
-        diagram_type: chosenType,
-      });
-      titleInput.value = "";
+      const created = await createSketch(titleInput.value);
+      clearForm();
       SF.clearNotice();
       SF.go("#/sketch/" + created.slug);
     } catch (err) {
       SF.showNotice("Could not create sketch: " + err.message, "error");
     } finally {
-      blankButton.disabled = false;
-      formNote.textContent = "";
+      setBusy(false);
     }
   }
 
+  function generateFailure(err) {
+    if (err.status === 503) {
+      return [
+        "Manual mode: set ANTHROPIC_API_KEY to enable AI generation. " +
+          "The sketch was created — the editor works without a key.",
+        "warn",
+      ];
+    }
+    if (err.status === 502) {
+      return [
+        "The model did not return a usable diagram (" + err.message + "). " +
+          "The sketch was created empty — write or revise it by hand.",
+        "error",
+      ];
+    }
+    return ["Generate failed: " + err.message + ". The sketch was created empty.", "warn"];
+  }
+
+  async function generate() {
+    const intent = intentInput.value.trim();
+    if (!intent) {
+      intentInput.focus();
+      return;
+    }
+    setBusy(true, "Drawing…");
+    let slug = "";
+    try {
+      slug = (await createSketch(titleInput.value || intent.slice(0, TITLE_FROM_INTENT))).slug;
+      await SF.request("POST", "/api/sketches/" + slug + "/generate", { intent: intent });
+      SF.clearNotice();
+    } catch (err) {
+      if (!slug) {
+        SF.showNotice("Could not create sketch: " + err.message, "error");
+        setBusy(false);
+        return;
+      }
+      SF.queueNotice.apply(null, generateFailure(err));
+    } finally {
+      setBusy(false);
+    }
+    clearForm();
+    SF.go("#/sketch/" + slug);
+  }
+
   blankButton.addEventListener("click", startBlank);
+  generateButton.addEventListener("click", generate);
   titleInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      startBlank();
+      if (intentInput.value.trim()) generate();
+      else startBlank();
+    }
+  });
+  intentInput.addEventListener("keydown", (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+      event.preventDefault();
+      generate();
     }
   });
 

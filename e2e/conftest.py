@@ -58,8 +58,7 @@ def wait_for(url: str, process: subprocess.Popen) -> None:
     raise RuntimeError("server did not come up in time")
 
 
-@pytest.fixture(scope="session")
-def server(tmp_path_factory: pytest.TempPathFactory) -> Iterator[str]:
+def run_app(data_dir: Path, **extra_env: str) -> Iterator[str]:
     port = free_port()
     env = dict(os.environ)
     for key in DROP_ENV:
@@ -67,8 +66,9 @@ def server(tmp_path_factory: pytest.TempPathFactory) -> Iterator[str]:
     env.update(
         HOST="127.0.0.1",
         PORT=str(port),
-        SKETCHFORGE_DATA=str(tmp_path_factory.mktemp("data")),
+        SKETCHFORGE_DATA=str(data_dir),
         PYTHONUNBUFFERED="1",
+        **extra_env,
     )
     process = subprocess.Popen([sys.executable, str(ROOT / "app.py")], cwd=str(ROOT), env=env)
     url = f"http://127.0.0.1:{port}"
@@ -81,6 +81,25 @@ def server(tmp_path_factory: pytest.TempPathFactory) -> Iterator[str]:
             process.wait(timeout=10)
         except subprocess.TimeoutExpired:
             process.kill()
+
+
+@pytest.fixture(scope="session")
+def server(tmp_path_factory: pytest.TempPathFactory) -> Iterator[str]:
+    """A keyless instance: no AUTH_TOKEN, no API key, no fake — the default."""
+    yield from run_app(tmp_path_factory.mktemp("data"))
+
+
+@pytest.fixture(scope="session")
+def keyless_server(tmp_path_factory: pytest.TempPathFactory) -> Iterator[str]:
+    """A second keyless instance, so tests that need an *empty* store (`server`)
+    are not disturbed by tests that only need the absence of a model."""
+    yield from run_app(tmp_path_factory.mktemp("keyless-data"))
+
+
+@pytest.fixture(scope="session")
+def fake_server(tmp_path_factory: pytest.TempPathFactory) -> Iterator[str]:
+    """The same app with the offline drafter wired in (SKETCHFORGE_FAKE=1)."""
+    yield from run_app(tmp_path_factory.mktemp("fake-data"), SKETCHFORGE_FAKE="1")
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list) -> None:

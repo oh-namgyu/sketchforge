@@ -27,6 +27,11 @@
                placeholder="checkout flow, order lifecycle, …">
         <p class="helper">Optional — an untitled sketch is fine, you can tell them apart by shape.</p>
 
+        <label class="field-label" for="f-intent">Intent</label>
+        <textarea class="input input-intent" id="f-intent" maxlength="4000"
+                  placeholder="how an order moves from cart to delivery"></textarea>
+        <p class="helper">One line for the model to draw — or leave it empty and start blank.</p>
+
         <span class="field-label" id="f-types-label">Diagram type</span>
         <div class="chips" id="f-types" role="group" aria-labelledby="f-types-label">
           <button class="chip" type="button" data-type="flowchart" aria-pressed="true">flowchart</button>
@@ -39,9 +44,14 @@
         <p class="helper">A hint for the starter snippet — any mermaid syntax is accepted in the editor.</p>
 
         <div class="form-actions">
-          <button class="btn btn-primary" type="button" id="f-blank">Start blank</button>
+          <button class="btn btn-primary" type="button" id="f-generate">Generate with AI</button>
+          <button class="btn" type="button" id="f-blank">Start blank</button>
           <span class="form-note" id="form-note"></span>
         </div>
+        <p class="helper helper-cost" id="cost-note">
+          Each generate or revise is 1–2 model calls billed to your own API key.
+          Without a key the editor still works — everything else here is local.
+        </p>
       </section>
 
       <section class="panel">
@@ -67,10 +77,26 @@
         <button class="btn btn-primary" type="button" id="studio-save" disabled>Save version</button>
       </div>
 
+      <div class="instructionbar" id="instructionbar">
+        <label class="field-label field-label-inline" for="instruction-input">Instruction</label>
+        <input class="input" id="instruction-input" maxlength="4000"
+               placeholder="add a payment failure branch">
+        <button class="btn btn-primary" type="button" id="studio-revise">Revise</button>
+        <span class="form-note" id="revise-note">Cmd/Ctrl+Enter · 1–2 model calls on your API key</span>
+      </div>
+
+      <div class="diffbar hidden" id="diffbar">
+        <span class="badge badge-plain" id="diff-summary">±0</span>
+        <span class="form-note">Proposed change — nothing is stored until you accept.</span>
+        <span class="spacer"></span>
+        <button class="btn btn-primary" type="button" id="studio-accept">Accept</button>
+        <button class="btn" type="button" id="studio-reject">Reject</button>
+      </div>
+
       <div class="split">
         <section class="pane pane-editor">
           <div class="pane-head">
-            <h3 class="pane-title">Source</h3>
+            <h3 class="pane-title" id="source-pane-title">Source</h3>
             <span class="form-note" id="editor-meta">0 lines · 0 chars</span>
             <span class="spacer"></span>
             <button class="btn btn-small" type="button" id="studio-starter">Insert starter</button>
@@ -78,6 +104,7 @@
           <textarea class="editor" id="source-editor" spellcheck="false" autocapitalize="off"
                     autocorrect="off" wrap="off"
                     placeholder="flowchart TD&#10;  A[Start] --> B[End]"></textarea>
+          <div class="diff-view hidden" id="diff-view"></div>
           <div class="error-panel hidden" id="render-error">
             <span class="error-title">Syntax error</span>
             <pre class="error-text" id="render-error-text"></pre>
@@ -107,8 +134,10 @@
   <script src="/static/vendor/mermaid.min.js"></script>
   <script src="/static/js/sanitize.js"></script>
   <script src="/static/js/render.js"></script>
+  <script src="/static/js/diff.js"></script>
   <script src="/static/js/app.js"></script>
   <script src="/static/js/home.js"></script>
   <script src="/static/js/studio.js"></script>
+  <script src="/static/js/revise.js"></script>
 </body>
 </html>

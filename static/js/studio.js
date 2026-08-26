@@ -28,6 +28,8 @@
   const starterButton = document.getElementById("studio-starter");
   const editor = document.getElementById("source-editor");
   const editorMeta = document.getElementById("editor-meta");
+  const diffView = document.getElementById("diff-view");
+  const paneTitle = document.getElementById("source-pane-title");
   const errorPanel = document.getElementById("render-error");
   const errorText = document.getElementById("render-error-text");
   const canvasNode = document.getElementById("render-canvas");
@@ -63,8 +65,9 @@
 
   let renderToken = 0;
 
-  async function renderNow() {
-    const source = editor.value;
+  /* Render any source, not only the editor's: the diff preview points this at
+     the proposal, which goes through the same parse-sanitise-insert path. */
+  async function renderSource(source) {
     const token = (renderToken += 1);
     if (!source.trim()) {
       canvas.clear();
@@ -82,6 +85,28 @@
       if (token !== renderToken) return;
       showError(window.SFRender.messageOf(err));
     }
+  }
+
+  function renderNow() {
+    return renderSource(editor.value);
+  }
+
+  /* Diff mode swaps the editor for the diff rows; the canvas keeps rendering,
+     but the proposal rather than the text on the left. */
+  function setDiffMode(on) {
+    editor.classList.toggle("hidden", on);
+    diffView.classList.toggle("hidden", !on);
+    starterButton.classList.toggle("hidden", on);
+    paneTitle.textContent = on ? "Proposed change" : "Source";
+    // while a proposal is on the table the version controls are out of reach:
+    // accept or reject is the only way forward, which keeps base_version honest
+    saveButton.disabled = true;
+    revertButton.disabled = true;
+    versionSelect.disabled = on;
+    if (on) return;
+    diffView.replaceChildren();
+    fillVersions();
+    markDirty();
   }
 
   const scheduleRender = SF.debounce(renderNow, RENDER_DEBOUNCE);
@@ -150,6 +175,7 @@
     } else if (sketch.data_loss) {
       SF.showNotice("This sketch could not be read and was restarted empty.", "warn");
     }
+    if (SF.afterAdopt) SF.afterAdopt(sketch);
   }
 
   versionSelect.addEventListener("change", () => {
@@ -226,7 +252,8 @@
   async function reload() {
     try {
       adopt(await SF.request("GET", "/api/sketches/" + state.slug));
-      SF.clearNotice();
+      // a message parked by the home screen or by an accept survives the load
+      if (!SF.flushNotice()) SF.clearNotice();
     } catch (err) {
       SF.showNotice("Could not open sketch: " + err.message, "error", "Home", () => SF.go("#/"));
     }
@@ -246,5 +273,17 @@
     scheduleRender.cancel();
     state.slug = "";
     state.sketch = null;
+  };
+
+  /* What revise.js is allowed to touch. Keeping it to one object means the diff
+     flow can be read on its own without tracing the editor's internals. */
+  SF.studio = {
+    state: state,
+    adopt: adopt,
+    reload: reload,
+    renderSource: renderSource,
+    renderEditor: renderNow,
+    setDiffMode: setDiffMode,
+    savedSource: () => versionSource(state.baseVersion),
   };
 })();
