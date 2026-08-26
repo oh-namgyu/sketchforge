@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: unit (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      # requirements-dev.txt already includes -r requirements.txt.
+      # No browser download here: the unit suite never opens one.
+      - run: pip install -r requirements-dev.txt
+      # The LLM tests drive scripted stubs through the real prompt contract, so
+      # the unit suite never reaches a provider and needs no key.
+      - run: python -m pytest -q
+
+  e2e:
+    name: e2e (chromium)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: playwright install --with-deps chromium
+      # The suite boots a real app.py — keyless for the manual-editor and XSS
+      # probe tests, SKETCHFORGE_FAKE=1 for the AI round trip. No keys, no network.
+      - run: python -m pytest e2e -q
+
+  docker:
+    name: docker build + smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build image
+        run: docker build -t sketchforge:ci .
+      - name: Run and smoke-test the auth gate
+        run: |
+          docker run -d --name sketchforge-ci \
+            -e AUTH_TOKEN=ci-smoke-token \
+            -p 127.0.0.1:16183:6183 sketchforge:ci
+          for _ in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:16183/api/sketches || true)
+            if [ "$code" = "401" ]; then ok=1; break; fi
+            sleep 1
+          done
+          docker logs sketchforge-ci
+          docker rm -f sketchforge-ci
+          if [ -z "$ok" ]; then
+            echo "expected 401 from /api/sketches in auth mode, last code: $code"
+            exit 1
+          fi

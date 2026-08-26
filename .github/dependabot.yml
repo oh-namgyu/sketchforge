@@ -1,0 +1,25 @@
+version: 2
+
+# Note: the vendored mermaid bundle in static/vendor/ is NOT covered here.
+# Dependabot cannot see it, and that is deliberate — a mermaid bump changes the
+# one code path that inserts markup into the DOM, so it is updated by hand with
+# scripts/vendor.sh and gated on re-running the XSS probe e2e. See NOTICE and
+# SECURITY.md.
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5

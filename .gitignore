@@ -16,9 +16,14 @@ env/
 .coverage
 htmlcov/
 
+# env files (keep only the template)
+.env*
+!.env.example
+
 # runtime state
 data/
 *.log
+test-results/
 
 # node (only if a toolchain is ever added — the app ships no build step)
 node_modules/

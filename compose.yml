@@ -1,0 +1,21 @@
+services:
+  sketchforge:
+    build: .
+    image: sketchforge:latest
+    # Host side stays on loopback. The container binds 0.0.0.0 inside its own
+    # network namespace; this mapping is what decides who can reach it.
+    ports:
+      - "127.0.0.1:6183:6183"
+    environment:
+      # Required: the container binds 0.0.0.0, and the bind guard refuses that
+      # without a token. Put AUTH_TOKEN in a .env file next to this compose file.
+      - AUTH_TOKEN=${AUTH_TOKEN:?set AUTH_TOKEN — the container binds 0.0.0.0 and refuses to start without it}
+      # Optional: without it the manual editor, the renderer, versions and every
+      # export still work, and only generate/revise return 503.
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - SKETCHFORGE_MODEL=${SKETCHFORGE_MODEL:-}
+    # The container runs as uid 10001. Make the host directory writable by it:
+    #   mkdir -p data && sudo chown 10001:10001 data
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
