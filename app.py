@@ -8,6 +8,7 @@ from typing import Optional
 
 from flask import Flask, Response, send_from_directory
 
+from core import auth
 from core.api import api_bp, register_errors
 from core.storage import Storage
 
@@ -43,6 +44,7 @@ def create_app(
     app.config["STORAGE"] = storage
     app.register_blueprint(api_bp)
     register_errors(app)
+    auth.install(app, token if token is not None else os.environ.get("AUTH_TOKEN"))
 
     @app.get("/")
     def index() -> Response:
@@ -61,6 +63,7 @@ def create_app(
 def main() -> None:
     host = os.environ.get("HOST", DEFAULT_HOST)
     port = int(os.environ.get("PORT", DEFAULT_PORT))
+    auth.check_bind(host, os.environ.get("AUTH_TOKEN"))
     create_app().run(host=host, port=port, threaded=True)
 
 
