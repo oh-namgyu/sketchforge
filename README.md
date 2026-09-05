@@ -289,4 +289,5 @@ base image, and deliberately does **not** watch `static/vendor/`.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Third-party notices: [NOTICE](NOTICE).
+MIT — see [LICENSE](LICENSE). Security policy: [SECURITY.md](SECURITY.md).
+Third-party notices: [NOTICE](NOTICE).
